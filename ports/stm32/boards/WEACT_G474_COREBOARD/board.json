@@ -1,6 +1,6 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../PYBV10/deploy.md"
     ],
     "docs": "",
     "features": [],
@@ -10,5 +10,11 @@
     "product": "WeAct G474 'CoreBoard'",
     "thumbnail": "",
     "url": "https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard",
+    "variants": {
+        "V10": "v1.0 board with no QSPI Flash (default)",
+        "V10_4M": "v1.0 board with 4MB QSPI Flash",
+        "V10_8M": "v1.0 board with 8MB QSPI Flash",
+        "V10_16M": "v1.0 board with 16MB QSPI Flash"
+    },
     "vendor": "WeAct Studio"
 }

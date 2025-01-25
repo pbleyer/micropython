@@ -1,0 +1,1 @@
+SPI_FLASH_SIZE_MB = 8

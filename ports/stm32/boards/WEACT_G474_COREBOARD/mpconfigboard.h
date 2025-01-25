@@ -7,7 +7,7 @@
 #define MICROPY_HW_ENABLE_DAC       (1) // A4, A5
 #define MICROPY_HW_ENABLE_USB       (1) // can be enabled if USB cable connected to PA11/PA12 (D-/D+)
 #define MICROPY_HW_HAS_SWITCH       (1)
-#define MICROPY_HW_HAS_FLASH        (0) // QSPI extflash not mounted
+#define MICROPY_HW_HAS_FLASH        (1) // Export internal Flash
 
 #define MICROPY_PY_ASYNCIO          (1)
 #define MICROPY_PY_DEFLATE          (1)
@@ -27,6 +27,11 @@
 #define MICROPY_HW_CLK_PLLR         (2)
 
 #define MICROPY_HW_CLK_USE_HSI48    (1) // for RNG and USB
+
+// RTC
+#define MICROPY_HW_RTC_USE_LSE      (1)
+#define MICROPY_HW_RTC_USE_US       (0)
+#define MICROPY_HW_RTC_USE_CALOUT   (1)
 
 // 4 wait states
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_8
@@ -95,3 +100,44 @@
 // #define MICROPY_HW_CAN1_NAME        "FDCAN1"
 // #define MICROPY_HW_CAN1_TX          (pin_A12) // A12, B9, D1
 // #define MICROPY_HW_CAN1_RX          (pin_A11) // A11, B8, D0
+
+// External SPI Flash configuration
+#if !MICROPY_HW_SPIFLASH_SIZE_BYTES
+// Use internal filesystem if spiflash not enabled.
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
+#else
+// Reserve SPI flash bus.
+// #define MICROPY_HW_SPI_IS_RESERVED(id)  (id == 1)
+
+// Disable internal filesystem to use spiflash.
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
+
+#define MICROPY_HW_SPIFLASH_ENABLE_CACHE (1)
+
+extern const struct _mp_spiflash_config_t spiflash_config;
+extern struct _spi_bdev_t spi_bdev;
+
+#define MICROPY_HW_BDEV_SPIFLASH (&spi_bdev)
+#define MICROPY_HW_BDEV_SPIFLASH_CONFIG (&spiflash_config)
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS / 8)
+#define MICROPY_HW_SPIFLASH_SIZE_BITS (MICROPY_HW_SPIFLASH_SIZE_BYTES * 8)
+#define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
+
+// QSPI flash configuration
+// #define MICROPY_HW_QSPI_PRESCALER (3)
+#define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (24)
+#define MICROPY_HW_QSPIFLASH_CS (pyb_pin_QSPI1_CS)
+#define MICROPY_HW_QSPIFLASH_SCK (pyb_pin_QSPI1_SCK)
+#define MICROPY_HW_QSPIFLASH_IO0 (pyb_pin_QSPI1_IO0)
+#define MICROPY_HW_QSPIFLASH_IO1 (pyb_pin_QSPI1_IO1)
+#define MICROPY_HW_QSPIFLASH_IO2 (pyb_pin_QSPI1_IO2)
+#define MICROPY_HW_QSPIFLASH_IO3 (pyb_pin_QSPI1_IO3)
+
+#define STATIC_AF_QUADSPI_BK1_NCS STATIC_AF_QUADSPI1_BK1_NCS
+#define STATIC_AF_QUADSPI_CLK STATIC_AF_QUADSPI1_CLK
+#define STATIC_AF_QUADSPI_BK1_IO0 STATIC_AF_QUADSPI1_BK1_IO0
+#define STATIC_AF_QUADSPI_BK1_IO1 STATIC_AF_QUADSPI1_BK1_IO1
+#define STATIC_AF_QUADSPI_BK1_IO2 STATIC_AF_QUADSPI1_BK1_IO2
+#define STATIC_AF_QUADSPI_BK1_IO3 STATIC_AF_QUADSPI1_BK1_IO3
+
+#endif // MICROPY_HW_SPIFLASH_SIZE_BYTES
