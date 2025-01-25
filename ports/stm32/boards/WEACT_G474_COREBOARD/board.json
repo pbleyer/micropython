@@ -1,0 +1,14 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+    ],
+    "mcu": "stm32g4",
+    "product": "WeAct G474 'CoreBoard'",
+    "thumbnail": "",
+    "url": "https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard",
+    "vendor": "WeAct Studio"
+}
