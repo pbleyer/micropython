@@ -67,6 +67,26 @@
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
 #endif
 
+// Whether to enable ROMFS on the internal flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH
+#define MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH (0)
+#endif
+
+// Whether to enable ROMFS on external QSPI flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (0)
+#endif
+
+// Whether to enable ROMFS partition 1.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART1
+#define MICROPY_HW_ROMFS_ENABLE_PART1 (0)
+#endif
+
+// Whether to enable ROMFS partition 2.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART2
+#define MICROPY_HW_ROMFS_ENABLE_PART2 (0)
+#endif
+
 // Whether to enable storage on the internal flash of the MCU
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
@@ -669,3 +689,7 @@
 #endif
 
 #define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)
+
+#ifndef MICROPY_HW_ETH_DMA_ATTRIBUTE
+#define MICROPY_HW_ETH_DMA_ATTRIBUTE __attribute__((aligned(16384)));
+#endif
