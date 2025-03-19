@@ -37,8 +37,8 @@
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_8
 
 // UART config
-// #define MICROPY_HW_LPUART1_TX       (pin_A2)  // A2, B11 = QSPI_nCS
-// #define MICROPY_HW_LPUART1_RX       (pin_A3)  // A3, B10 = QSPI_CLK
+#define MICROPY_HW_LPUART1_TX       (pin_A2)  // A2, B11 = QSPI_nCS
+#define MICROPY_HW_LPUART1_RX       (pin_A3)  // A3, B10 = QSPI_CLK
 #define MICROPY_HW_UART1_TX         (pin_B6)  // A9, B6, C4
 #define MICROPY_HW_UART1_RX         (pin_B7)  // A10, B7
 // #define MICROPY_HW_UART2_TX       (pin_A2)  // A14, B3
