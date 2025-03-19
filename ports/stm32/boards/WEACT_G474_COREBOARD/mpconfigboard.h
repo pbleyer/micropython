@@ -37,8 +37,8 @@
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_8
 
 // UART config
-#define MICROPY_HW_LPUART1_TX       (pin_A2)  // A2, B11 = QSPI_nCS
-#define MICROPY_HW_LPUART1_RX       (pin_A3)  // A3, B10 = QSPI_CLK
+// #define MICROPY_HW_LPUART1_TX       (pin_A2)  // A2, B11 = QSPI_nCS
+// #define MICROPY_HW_LPUART1_RX       (pin_A3)  // A3, B10 = QSPI_CLK
 #define MICROPY_HW_UART1_TX         (pin_B6)  // A9, B6, C4
 #define MICROPY_HW_UART1_RX         (pin_B7)  // A10, B7
 // #define MICROPY_HW_UART2_TX       (pin_A2)  // A14, B3
@@ -101,31 +101,23 @@
 // #define MICROPY_HW_CAN1_TX          (pin_A12) // A12, B9, D1
 // #define MICROPY_HW_CAN1_RX          (pin_A11) // A11, B8, D0
 
-// External SPI Flash configuration
-#if !MICROPY_HW_SPIFLASH_SIZE_BYTES
-// Use internal filesystem if spiflash not enabled.
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
-#else
-// Reserve SPI flash bus.
-// #define MICROPY_HW_SPI_IS_RESERVED(id)  (id == 1)
-
-// Disable internal filesystem to use spiflash.
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
+#if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE (1)
+
+// #define MICROPY_BOARD_EARLY_INIT board_early_init
+// void board_early_init(void);
 
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
 
-#define MICROPY_HW_BDEV_SPIFLASH (&spi_bdev)
 #define MICROPY_HW_BDEV_SPIFLASH_CONFIG (&spiflash_config)
-#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS / 8)
-#define MICROPY_HW_SPIFLASH_SIZE_BITS (MICROPY_HW_SPIFLASH_SIZE_BYTES * 8)
+#define MICROPY_HW_BDEV_SPIFLASH (&spi_bdev)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (1 << (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3))
 
 // QSPI flash configuration
-// #define MICROPY_HW_QSPI_PRESCALER (3)
-#define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (24)
+#define MICROPY_HW_QSPI_PRESCALER (2) // 85MHz @ 170MHz HCLK
 #define MICROPY_HW_QSPIFLASH_CS (pyb_pin_QSPI1_CS)
 #define MICROPY_HW_QSPIFLASH_SCK (pyb_pin_QSPI1_SCK)
 #define MICROPY_HW_QSPIFLASH_IO0 (pyb_pin_QSPI1_IO0)
@@ -139,5 +131,4 @@ extern struct _spi_bdev_t spi_bdev;
 #define STATIC_AF_QUADSPI_BK1_IO1 STATIC_AF_QUADSPI1_BK1_IO1
 #define STATIC_AF_QUADSPI_BK1_IO2 STATIC_AF_QUADSPI1_BK1_IO2
 #define STATIC_AF_QUADSPI_BK1_IO3 STATIC_AF_QUADSPI1_BK1_IO3
-
-#endif // MICROPY_HW_SPIFLASH_SIZE_BYTES
+#endif

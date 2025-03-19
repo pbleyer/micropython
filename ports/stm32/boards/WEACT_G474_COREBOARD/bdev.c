@@ -21,4 +21,13 @@ const mp_spiflash_config_t spiflash_config = {
 
 spi_bdev_t spi_bdev;
 
+// This init function is needed to memory map the QSPI flash early in the boot process
+/* 
+void 
+board_early_init(void) {
+    qspi_init();
+    qspi_memory_map();
+}
+*/
+
 #endif
