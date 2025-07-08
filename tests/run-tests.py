@@ -16,7 +16,7 @@ import threading
 import tempfile
 
 # Maximum time to run a PC-based test, in seconds.
-TEST_TIMEOUT = 30
+TEST_TIMEOUT = float(os.environ.get('MICROPY_TEST_TIMEOUT', 30))
 
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
 # are guaranteed to always work, this one should though.
@@ -95,6 +95,7 @@ class __FS:
     return __File()
 vfs.mount(__FS(), '/__vfstest')
 os.chdir('/__vfstest')
+{import_prologue}
 __import__('__injected_test')
 """
 
@@ -353,6 +354,7 @@ special_tests = [
         "micropython/meminfo.py",
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
+        "misc/sys_settrace_cov.py",
         "thread/thread_exc2.py",
         "ports/esp32/partition_ota.py",
     )
@@ -405,6 +407,10 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
                                     return rv
 
                     def send_get(what):
+                        # Detect {\x00} pattern and convert to ctrl-key codes.
+                        ctrl_code = lambda m: bytes([int(m.group(1))])
+                        what = re.sub(rb'{\\x(\d\d)}', ctrl_code, what)
+
                         os.write(master, what)
                         return get()
 
@@ -1126,6 +1132,8 @@ class append_filter(argparse.Action):
 
 
 def main():
+    global injected_import_hook_code
+
     cmd_parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""Run and manage tests for MicroPython.
@@ -1235,7 +1243,19 @@ the last matching regex is used:
         action="store_true",
         help="re-run only the failed tests",
     )
+    cmd_parser.add_argument(
+        "--begin",
+        metavar="PROLOGUE",
+        default=None,
+        help="prologue python file to execute before module import",
+    )
     args = cmd_parser.parse_args()
+
+    prologue = ""
+    if args.begin:
+        with open(args.begin, "rt") as source:
+            prologue = source.read()
+    injected_import_hook_code = injected_import_hook_code.replace("{import_prologue}", prologue)
 
     if args.print_failures:
         for out in glob(os.path.join(args.result_dir, "*.out")):

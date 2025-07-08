@@ -220,6 +220,7 @@ static mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
         mp_printf(&mp_plat_print, "%%\n"); // literal % character
+        mp_printf(&mp_plat_print, ".%-3s.\n", "a"); // left adjust
     }
 
     // GC
@@ -475,6 +476,18 @@ static mp_obj_t extra_coverage(void) {
         mp_int_t value_signed;
         mpz_as_int_checked(&mpz, &value_signed);
         mp_printf(&mp_plat_print, "%d\n", (int)value_signed);
+
+        // hash the zero mpz integer
+        mpz_set_from_int(&mpz, 0);
+        mp_printf(&mp_plat_print, "%d\n", mpz_hash(&mpz));
+
+        // convert the mpz zero integer to int
+        mp_printf(&mp_plat_print, "%d\n", mpz_as_int_checked(&mpz, &value_signed));
+        mp_printf(&mp_plat_print, "%d\n", value_signed);
+
+        // mpz_set_from_float with 0 as argument
+        mpz_set_from_float(&mpz, 0);
+        mp_printf(&mp_plat_print, "%f\n", mpz_as_float(&mpz));
     }
 
     // runtime utils
@@ -492,7 +505,7 @@ static mp_obj_t extra_coverage(void) {
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str_from_cstr("abc"), mp_obj_new_str_from_cstr("abc"));
 
         // mp_obj_int_get_checked with mp_obj_int_t that has a value that is a small integer
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(mp_obj_int_new_mpz()));
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_int_get_checked(MP_OBJ_FROM_PTR(mp_obj_int_new_mpz())));
 
         // mp_obj_int_get_uint_checked with non-negative small-int
         mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
@@ -569,12 +582,24 @@ static mp_obj_t extra_coverage(void) {
         fun_bc.context = &context;
         fun_bc.child_table = NULL;
         fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
+        #if MICROPY_PY_SYS_SETTRACE
+        struct _mp_raw_code_t rc = {};
+        fun_bc.rc = &rc;
+        #endif
         mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, state, mp_obj_t, 1);
         code_state->fun_bc = &fun_bc;
         code_state->ip = (const byte *)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
         code_state->exc_sp_idx = 0;
         code_state->old_globals = NULL;
+        #if MICROPY_STACKLESS
+        code_state->prev = NULL;
+        #endif
+        #if MICROPY_PY_SYS_SETTRACE
+        code_state->prev_state = NULL;
+        code_state->frame = NULL;
+        #endif
+
         mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
         mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
     }
@@ -819,7 +844,7 @@ static mp_obj_t extra_coverage(void) {
     mp_obj_streamtest_t *s2 = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_textio2);
 
     // return a tuple of data for testing on the Python side
-    mp_obj_t items[] = {(mp_obj_t)&str_no_hash_obj, (mp_obj_t)&bytes_no_hash_obj, MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};
+    mp_obj_t items[] = {MP_OBJ_FROM_PTR(&str_no_hash_obj), MP_OBJ_FROM_PTR(&bytes_no_hash_obj), MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};
     return mp_obj_new_tuple(MP_ARRAY_SIZE(items), items);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
